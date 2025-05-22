@@ -1,0 +1,29 @@
+# docker-compose.yml
+version: "3.3"
+
+services:
+  web:
+    build: ./backend
+    container_name: conduit_web
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: conduit_redis
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: ./backend
+    container_name: conduit_celery
+    command: celery -A core worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
