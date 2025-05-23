@@ -1,6 +1,9 @@
 from django.test import TestCase, Client
 from unittest.mock import patch
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 class CeilingConstructionViewTests(TestCase):
 
@@ -9,19 +12,18 @@ class CeilingConstructionViewTests(TestCase):
         self.url = '/api/next/'
 
     def mock_df(self, rows):
-        """Ensures every test row has all required columns"""
+        """Ensure each test row has all required columns"""
         required_columns = [
             'Ceiling type', 'Deck construction', 'Attic ventilation', 'Attic fan',
             'Radiant barrier', 'Roofing material', 'Roof color',
             'Insulation', 'R-value', 'Extended Construction Numbers',
-            'Look-Up Construction Number', 'Total Price', 'Notes'  # <-- ADDED Notes
+            'Look-Up Construction Number', 'Total Price', 'Notes'
         ]
         complete_rows = []
         for row in rows:
             full_row = {col: row.get(col, None) for col in required_columns}
             complete_rows.append(full_row)
         return pd.DataFrame(complete_rows)
-
 
     @patch('form.views.df.copy')
     def test_initial_request(self, mock_copy):
