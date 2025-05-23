@@ -44,7 +44,7 @@
           <transition name="fade" mode="out-in">
             <!-- Final Result -->
             <div v-if="constructionNumber" key="result" class="space-y-4">
-              <h2 class="text-2xl font-light text-green-400">Construction Complete</h2>
+              <h2 class="text-2xl font-light construction-complete">Construction Complete</h2>
               <div class="bg-white/5 border border-white/10 rounded-lg p-6">
                 <p class="text-white/60 text-sm">Construction Number</p>
                 <p class="text-3xl font-mono text-green-400">{{ constructionNumber }}</p>
@@ -165,6 +165,12 @@ onMounted(() => fetchNext())
 /* Override borders to ensure 6px white lines */
 table th,
 table td {
-  border: 6px solid white !important;
+  border: 2px solid white !important;
+}
+
+
+/* Force heading color in case base styles override it */
+.construction-complete {
+  color: theme('colors.green.400') !important;
 }
 </style>
