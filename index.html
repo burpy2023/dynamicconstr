@@ -185,19 +185,30 @@
 
     function renderTable() {
       tableBody.innerHTML = '';
+
       for (let prop in selections) {
-        const price = priceBreakdown[prop] !== undefined
-          ? `$${priceBreakdown[prop].toFixed(2)}`
-          : '';
+        let priceText = '';
+        let displayVal = selections[prop];
+
+        // Support both { price: x, value: y } and just numbers
+        const breakdown = priceBreakdown[prop];
+        if (typeof breakdown === 'object' && breakdown !== null && 'price' in breakdown) {
+          priceText = `$${breakdown.price.toFixed(2)}`;
+          displayVal = breakdown.value || selections[prop];
+        } else if (typeof breakdown === 'number') {
+          priceText = `$${breakdown.toFixed(2)}`;
+        }
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${prop}</td>
-          <td>${selections[prop]}</td>
-          <td>${price}</td>
+          <td>${displayVal}</td>
+          <td>${priceText}</td>
         `;
         tableBody.appendChild(tr);
       }
     }
+
 
     function showQuestion(field, options) {
       formArea.innerHTML = `

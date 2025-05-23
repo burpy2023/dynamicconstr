@@ -39,7 +39,7 @@ def get_next_options(request):
             logger.error("CSV data not loaded.")
             return JsonResponse({'error': 'Internal server error.'}, status=500)
 
-        # Start filtering
+        # filtering
         filtered = df.copy()
         for key, val in request.GET.items():
             if key in df.columns:
