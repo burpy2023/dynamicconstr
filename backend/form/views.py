@@ -33,15 +33,23 @@ NUMBER_COLUMNS = [
 
 def get_next_options(request):
     try:
+        logger.info("Incoming request params: %s", request.GET.dict())
+
         if df.empty:
+            logger.error("CSV data not loaded.")
             return JsonResponse({'error': 'Internal server error.'}, status=500)
 
         # Start filtering
         filtered = df.copy()
         for key, val in request.GET.items():
             if key in df.columns:
-                filtered = filtered[filtered[key] == val]
+                logger.info("Trying to filter %s == %s", key, val)
+                match_count = filtered[filtered[key] == val].shape[0]
+                logger.info("Matches found: %d", match_count)
+                filtered = filtered[filtered[key].str.contains(val, case=False, na=False)]
+
             else:
+                logger.warning("Invalid filter key: %s", key)
                 return JsonResponse({'error': f"Invalid filter: {key}"}, status=400)
 
         # Build price_breakdown
@@ -50,20 +58,25 @@ def get_next_options(request):
             subset = df[df[key] == val]
             if not subset.empty:
                 try:
-                    price_breakdown[key] = float(round(subset['Total Price'].iloc[0], 2))
-                except Exception:
-                    pass
+                    price = float(round(subset['Total Price'].iloc[0], 2))
+                    price_breakdown[key] = price
+                    logger.info("Price for %s = %s is %.2f", key, val, price)
+                except Exception as e:
+                    logger.warning("Could not extract price for %s = %s: %s", key, val, e)
 
         # Find next question
         remaining = [
             col for col in df.columns
             if col not in request.GET and col not in NUMBER_COLUMNS
         ]
+        logger.info("Remaining columns to ask: %s", remaining)
+
         for col in remaining:
-            # Drop NaNs, empty strings, and literal 'nan'
             raw = filtered[col].dropna().unique().tolist()
             opts = [o for o in raw if str(o).strip().lower() not in ('', 'nan')]
-            if opts:
+            logger.info("Options for %s: %s", col, opts)
+
+            if len(opts) > 0:
                 return JsonResponse({
                     'next': col,
                     'options': opts,
@@ -73,6 +86,7 @@ def get_next_options(request):
         # Final result
         if not filtered.empty:
             total = float(round(filtered['Total Price'].iloc[0], 2))
+            logger.info("No more questions. Final price: %.2f", total)
             return JsonResponse({
                 'next': None,
                 'construction_number': filtered['Extended Construction Numbers'].iloc[0],
@@ -81,6 +95,7 @@ def get_next_options(request):
             }, status=200)
 
         # No matches
+        logger.warning("No matching data found after filtering.")
         return JsonResponse({
             'next': None,
             'construction_number': None,
@@ -89,5 +104,5 @@ def get_next_options(request):
         }, status=200)
 
     except Exception as e:
-        logger.exception(f"Unexpected error in get_next_options: {e}")
+        logger.exception("Unexpected error in get_next_options: %s", e)
         return JsonResponse({'error': 'Internal server error.'}, status=500)
