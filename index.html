@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dynamic Construction Form</title>
+  <style>
+    /* ---------- Global Styles ---------- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: Inter, sans-serif;
+      background: #181818;
+      color: #ddd;
+    }
+    h1, h2, h3 { margin-bottom: 0.5rem; }
+
+    /* ---------- Layout ---------- */
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    .column {
+      width: 50%;
+      padding: 1.5rem;
+    }
+    .header { padding: 2rem 1.5rem; }
+
+    /* ---------- Buttons & Select ---------- */
+    button, select {
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #555;
+    }
+    button {
+      padding: 0.4rem 0.8rem;
+      background: rgba(220, 50, 50, 0.2);
+      color: #f88;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: rgba(255,255,255,0.1);
+      color: #555;
+      cursor: not-allowed;
+    }
+    select {
+      padding: 0.4rem;
+      background: #fff;
+      color: #000;
+      border-color: #ccc;
+    }
+    select option {
+      background: #fff;
+      color: #000;
+    }
+
+    /* ---------- Progress Bar ---------- */
+    .progress-label { font-size: .875rem; color: rgba(255,255,255,0.6); }
+    .progress-bar {
+      background: rgba(255,255,255,0.1);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: .25rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* ---------- Table ---------- */
+    .pricing-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 1rem;
+      color: #ddd;
+    }
+    .pricing-table th,
+    .pricing-table td {
+      border: 6px solid white;
+      padding: .5rem;
+      background: rgba(0,0,0,0.6);
+    }
+    .pricing-table th {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* ---------- Text Colors ---------- */
+    .text-muted { color: rgba(255,255,255,0.6); }
+    .text-green { color: #34D399; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Dynamic Construction Form</h1>
+  </div>
+
+  <div class="container">
+
+    <!-- LEFT COLUMN: Form -->
+    <div class="column">
+
+      <div style="text-align: right; margin-bottom:1rem;">
+        <button id="resetBtn">Reset</button>
+      </div>
+
+      <!-- Progress -->
+      <div>
+        <div class="progress-label" id="progressLabel">Progress Step 0 of 5</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <!-- Question / Result -->
+      <div id="formArea" style="margin-top:1.5rem;">
+        <!-- dynamically injected here -->
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Pricing Table -->
+    <div class="column">
+      <h3>Pricing Table</h3>
+      <table class="pricing-table" id="pricingTable">
+        <thead>
+          <tr>
+            <th>Property</th><th>Selection</th><th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- dynamically injected rows -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    const estimatedTotal = 5;
+    const selections = {};
+    let priceBreakdown = {};
+    let grandTotal = 0;
+
+    const progressLabel = document.getElementById('progressLabel');
+    const progressFill  = document.getElementById('progressFill');
+    const formArea      = document.getElementById('formArea');
+    const tableBody     = document.querySelector('#pricingTable tbody');
+    const resetBtn      = document.getElementById('resetBtn');
+
+    async function fetchNext() {
+      const query = new URLSearchParams(selections).toString();
+      const res   = await fetch(`${API_BASE}/api/next?${query}`);
+      const data  = await res.json();
+
+      // capture the breakdown object
+      priceBreakdown = data.price_breakdown || {};
+
+      // compute grandTotal by summing all breakdown prices
+      grandTotal = Object.values(priceBreakdown)
+        .reduce((sum, p) =>
+          sum + (typeof p === 'number' ? p : parseFloat(p) || 0), 0
+        );
+
+      if (data.construction_number) {
+        showResult(data.construction_number);
+      } else {
+        showQuestion(data.next, data.options);
+      }
+      renderTable();
+      renderProgress();
+    }
+
+    function renderProgress() {
+      const step = Math.min(Object.keys(selections).length + 1, estimatedTotal);
+      progressLabel.textContent = `Progress Step ${step} of ${estimatedTotal}`;
+      const pct = ((step - 1) / (estimatedTotal - 1)) * 100;
+      progressFill.style.width = pct + '%';
+    }
+
+    function renderTable() {
+      tableBody.innerHTML = '';
+      for (let prop in selections) {
+        const price = priceBreakdown[prop] !== undefined
+          ? `$${priceBreakdown[prop].toFixed(2)}`
+          : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${prop}</td>
+          <td>${selections[prop]}</td>
+          <td>${price}</td>
+        `;
+        tableBody.appendChild(tr);
+      }
+    }
+
+    function showQuestion(field, options) {
+      formArea.innerHTML = `
+        <h2>${field}</h2>
+        <p class="text-muted">Select your preferred option</p>
+        <select id="optSelect">
+          <option value="" disabled selected>Choose an option…</option>
+          ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
+        </select>
+        <button id="contBtn" disabled>Continue</button>
+      `;
+      const sel = document.getElementById('optSelect');
+      const btn = document.getElementById('contBtn');
+      sel.addEventListener('change', () => btn.disabled = !sel.value);
+      btn.addEventListener('click', () => {
+        selections[field] = sel.value;
+        fetchNext();
+      });
+    }
+
+    function showResult(number) {
+      formArea.innerHTML = `
+        <h2 class="text-green">Construction Complete</h2>
+        <p class="text-muted">Construction Number</p>
+        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">
+          ${number}
+        </p>
+        <p class="text-muted" style="margin-top:1rem;">Total Price</p>
+        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">
+          $${grandTotal.toFixed(2)}
+        </p>
+      `;
+    }
+
+    resetBtn.addEventListener('click', () => {
+      for (let k in selections) delete selections[k];
+      priceBreakdown = {};
+      grandTotal = 0;
+      fetchNext();
+    });
+
+    // initialize
+    fetchNext();
+  </script>
+</body>
+</html>
