@@ -1,14 +1,15 @@
 import pandas as pd
 
-# original
+# 1) Path to your raw CSV
 raw_path = '/mnt/c/coding_projects/conduit/dynamicconstr/priced_ceiling_construction.csv'
 
-# Load it without a header row – we’ll name the cols manually
+# 2) Read with no header
 df = pd.read_csv(raw_path, header=None)
 
-# total number of columns in the file
+# 3) How many columns did pandas see?
 n_cols = df.shape[1]
 
+# 4) Your nine real column names:
 real_cols = [
     "Ceiling type",
     "Deck construction",
@@ -21,26 +22,24 @@ real_cols = [
     "Total Price"
 ]
 
-# Check if there are any extra junk cols
+# 5) Number of placeholders needed:
 n_unused = n_cols - len(real_cols)
-
-# If it's missing expected cols, prob something's wrong
 if n_unused < 0:
-    raise ValueError(f"CSV has fewer columns ({n_cols}) than expected 9. Something’s off...")
+    raise ValueError(f"CSV has fewer columns ({n_cols}) than expected 9.")
 
+# 6) Build the full header list:
 unused_cols = [f"unused{i+1}" for i in range(n_unused)]
-
 df.columns = real_cols + unused_cols
 
-# Drop all the extra columns
+# 7) Drop the placeholder columns:
 df = df.drop(columns=unused_cols)
 
-# strip out white space from every col we care abt
+# 8) Trim whitespace on every field:
 for col in real_cols:
     df[col] = df[col].astype(str).str.strip()
 
-# Save the cleaned version 
+# 9) Save out the cleaned CSV:
 cleaned_path = '/mnt/c/coding_projects/conduit/dynamicconstr/ceiling_construction_cleaned.csv'
 df.to_csv(cleaned_path, index=False)
 
-print(f"Cleaned CSV saved to {cleaned_path} (dropped {n_unused} unused columns)")
+print(f"✅ Cleaned CSV saved to {cleaned_path} (dropped {n_unused} unused columns)")
