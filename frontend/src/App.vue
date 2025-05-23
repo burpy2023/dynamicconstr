@@ -1,142 +1,141 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-    <!-- Card Container -->
-    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-10">
-      
-      <!-- Big Centered Heading -->
-      <h1 class="text-6xl font-extrabold text-gray-900 mb-8 text-center">
+  <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+
+    <!-- HEADER -->
+    <div class="w-full py-8 px-6">
+      <h1 class="text-4xl font-light tracking-wide text-white/90">
         Dynamic Construction Form
       </h1>
+    </div>
 
-      <!-- Reset Button (top-right) -->
-      <div class="flex justify-end mb-6">
-        <button
-          @click="resetForm"
-          class="flex items-center space-x-2 p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition"
-          aria-label="Reset form"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg"
-               class="w-6 h-6"
-               fill="none"
-               viewBox="0 0 24 24"
-               stroke="currentColor"
-               stroke-width="2"
+    <!-- TWO-COLUMN LAYOUT -->
+    <div class="flex w-full h-full">
+
+      <!-- LEFT COLUMN: FORM -->
+      <div class="w-1/2 p-6 space-y-8">
+
+        <!-- Reset -->
+        <div class="flex justify-end">
+          <button
+            @click="resetForm"
+            class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 rounded-lg transition"
           >
-            <path d="M4 4v5h5M20 20v-5h-5M5 13a7 7 0 0112-4.9L20 8m-1 8a7 7 0 01-12 4.9L4 16"/>
-          </svg>
-          <span class="font-medium">Reset</span>
-        </button>
-      </div>
-
-      <!-- Step Indicator -->
-      <p class="text-xl text-gray-700 mb-4 text-center">
-        Step {{ displayStep }} of {{ estimatedTotal }}
-      </p>
-      <div class="w-full bg-gray-200 h-2 rounded-full mb-8 overflow-hidden">
-        <div
-          class="h-full bg-blue-500 transition-all"
-          :style="{ width: ((displayStep - 1) / (estimatedTotal - 1)) * 100 + '%' }"
-        />
-      </div>
-
-      <!-- Breadcrumbs (one per line) -->
-      <transition-group
-        name="slide"
-        tag="div"
-        class="mb-8 space-y-3 text-lg text-gray-700"
-      >
-        <div v-for="(value, key) in selections" :key="key" class="pl-2">
-          {{ key }}: <strong>{{ value }}</strong>
-        </div>
-      </transition-group>
-
-      <!-- Question / Result Card -->
-      <transition name="fade" mode="out-in">
-        <!-- Final result -->
-        <div
-          v-if="constructionNumber"
-          key="result"
-          class="text-center mb-8"
-        >
-          <svg class="mx-auto mb-4 w-16 h-16 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-                  d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
-                  clip-rule="evenodd"/>
-          </svg>
-          <p class="text-2xl font-semibold text-gray-800">
-            Final Construction Number:
-            <span class="text-green-600">{{ constructionNumber }}</span>
-          </p>
+            Reset
+          </button>
         </div>
 
-        <!-- Question step -->
-        <div
-          v-else-if="nextField && options.length"
-          key="question"
-          class="space-y-6 mb-8"
-        >
-          <p class="text-2xl font-medium text-gray-800">{{ nextField }}</p>
-          <div class="flex items-center space-x-4">
-            <select
-              v-model="selectedOption"
-              class="flex-grow border border-gray-300 rounded-lg px-6 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option disabled value="">Select an option</option>
-              <option v-for="opt in options" :key="opt" :value="opt">
-                {{ opt }}
-              </option>
-            </select>
-            <button
-              @click="onNext"
-              :disabled="!selectedOption"
-              class="px-6 py-3 bg-blue-600 text-white rounded-lg text-lg shadow disabled:opacity-50 hover:bg-blue-700 transition"
-            >
-              Next
-            </button>
+        <!-- Progress -->
+        <div class="space-y-6">
+          <div class="space-y-2">
+            <div class="text-sm text-white/60">
+              Progress Step {{ displayStep }} of {{ estimatedTotal }}
+            </div>
+            <div class="w-full bg-white/10 h-1 rounded overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-blue-400 to-purple-400 transition-all"
+                :style="{ width: ((displayStep - 1)/(estimatedTotal - 1))*100 + '%' }"
+              ></div>
+            </div>
           </div>
         </div>
 
-        <!-- Loading State -->
-        <div v-else key="loading" class="text-center text-gray-500 text-lg mb-8">
-          Loading...
+        <!-- Question / Result -->
+        <div class="space-y-6">
+          <transition name="fade" mode="out-in">
+            <!-- Final Result -->
+            <div v-if="constructionNumber" key="result" class="space-y-4">
+              <h2 class="text-2xl font-light text-green-400">Construction Complete</h2>
+              <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                <p class="text-white/60 text-sm">Construction Number</p>
+                <p class="text-3xl font-mono text-green-400">{{ constructionNumber }}</p>
+              </div>
+            </div>
+
+            <!-- Next Question -->
+            <div v-else-if="nextField && options.length" key="question" class="space-y-4">
+              <h2 class="text-2xl font-light text-white/90">{{ nextField }}</h2>
+              <p class="text-white/60 text-sm">Select your preferred option</p>
+              <select
+                v-model="selectedOption"
+                class="w-full bg-white/5 border border-white/20 rounded px-4 py-2 text-white"
+              >
+                <option disabled value="">Choose an option…</option>
+                <option v-for="opt in options" :key="opt" :value="opt">{{ opt }}</option>
+              </select>
+              <button
+                @click="onNext"
+                :disabled="!selectedOption"
+                class="w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-white/5 border border-blue-500/30 text-blue-300 rounded transition disabled:cursor-not-allowed"
+              >
+                {{ selectedOption ? 'Continue' : 'Please select an option' }}
+              </button>
+            </div>
+
+            <!-- Loading -->
+            <div v-else key="loading" class="text-center py-12">
+              <div class="animate-spin w-8 h-8 border-2 border-white/20 border-t-blue-400 rounded-full mx-auto mb-4"></div>
+              <p class="text-white/60">Loading options…</p>
+            </div>
+          </transition>
         </div>
-      </transition>
+      </div>
+
+      <!-- RIGHT COLUMN: EXCEL-STYLE PRICING TABLE -->
+      <div class="w-1/2 p-6">
+        <h3 class="text-xl font-light text-white/80 mb-4">Pricing Table</h3>
+        <div v-if="Object.keys(selections).length" class="bg-white/5 border border-white/10 rounded-lg overflow-auto">
+          <table class="w-full table-auto border-separate border-spacing-0 text-white">
+            <thead>
+              <tr class="bg-white/10">
+                <th class="px-2 py-1 text-left">Property</th>
+                <th class="px-2 py-1 text-left">Selection</th>
+                <th class="px-2 py-1 text-left">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(v,k) in selections" :key="k + '-price'" class="hover:bg-white/10">
+                <td class="px-2 py-1">{{ k }}</td>
+                <td class="px-2 py-1">{{ v }}</td>
+                <td class="px-2 py-1">&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted, computed } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 
 const selections        = reactive({})
 const nextField         = ref(null)
 const options           = ref([])
 const constructionNumber= ref(null)
 const selectedOption    = ref('')
-const estimatedTotal    = 5  // update if your CSV path length changes
+const estimatedTotal    = 5
 
-// compute current step (capped)
 const displayStep = computed(() => {
   const s = Object.keys(selections).length + 1
   return s > estimatedTotal ? estimatedTotal : s
 })
 
-// base URL comes from Vite ENV, fallback to localhost
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 async function fetchNext(params = {}) {
   const query = new URLSearchParams(params).toString()
-  const res   = await fetch(`${API_BASE}/api/next/?${query}`)
-  const data  = await res.json()
+  const data  = await fetch(`${API_BASE}/api/next?${query}`).then(r => r.json())
 
   if (data.construction_number) {
     constructionNumber.value = data.construction_number
-    nextField.value = null
-    options.value   = []
+    nextField.value          = null
+    options.value            = []
   } else {
-    nextField.value = data.next
-    options.value   = data.options
-    selectedOption.value = ''
+    nextField.value          = data.next
+    options.value            = data.options
+    selectedOption.value     = ''
   }
 }
 
@@ -147,10 +146,10 @@ function onNext() {
 
 function resetForm() {
   Object.keys(selections).forEach(k => delete selections[k])
-  nextField.value        = null
-  options.value          = []
-  constructionNumber.value= null
-  selectedOption.value   = ''
+  nextField.value          = null
+  options.value            = []
+  constructionNumber.value = null
+  selectedOption.value     = ''
   fetchNext()
 }
 
@@ -158,20 +157,14 @@ onMounted(() => fetchNext())
 </script>
 
 <style scoped>
-/* Fade transition */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
+.fade-enter-active, .fade-leave-active { transition: all .3s ease }
+.fade-enter-from, .fade-leave-to   { opacity: 0; transform: translateY(10px) }
+.slide-enter-active, .slide-leave-active { transition: all .3s ease }
+.slide-enter-from, .slide-leave-to       { opacity: 0; transform: translateX(-10px) }
 
-/* Slide transition for breadcrumbs */
-.slide-enter-active, .slide-leave-active {
-  transition: all 0.3s ease;
-}
-.slide-enter-from, .slide-leave-to {
-  transform: translateY(-10px);
-  opacity: 0;
+/* Override borders to ensure 6px white lines */
+table th,
+table td {
+  border: 6px solid white !important;
 }
 </style>

@@ -1,5 +1,5 @@
-# @backend = https://dynamicconstr.onrender.com
-@backend = http://127.0.0.1:8000
+@backend = https://dynamicconstr.onrender.com
+# @backend = http://127.0.0.1:8000
 
 # 1) First question
 GET {{backend}}/api/next/
