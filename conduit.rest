@@ -1,27 +1,30 @@
+# @backend = https://dynamicconstr.onrender.com
+@backend = http://127.0.0.1:8000
+
 # 1) First question
-GET http://127.0.0.1:8000/api/next/
+GET {{backend}}/api/next/
 Accept: application/json
 
 ### 2) Pick Ceiling type
-GET http://127.0.0.1:8000/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists
+GET {{backend}}/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists
 Accept: application/json
 
 ### 3) Pick Roofing material
-GET http://127.0.0.1:8000/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles
+GET {{backend}}/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles
 Accept: application/json
 
 ### 4) Pick Roof color
-GET http://127.0.0.1:8000/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles&Roof%20color=Dark
+GET {{backend}}/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles&Roof%20color=Dark
 Accept: application/json
 
 ### 5) Pick Insulation (the next non‐empty column)
-GET http://127.0.0.1:8000/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles&Roof%20color=Dark&Insulation=Blanket%20or%20loose%20fill
+GET {{backend}}/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles&Roof%20color=Dark&Insulation=Blanket%20or%20loose%20fill
 Accept: application/json
 
 ### 6) Pick R‐value (the last attribute)
-GET http://127.0.0.1:8000/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles&Roof%20color=Dark&Insulation=Blanket%20or%20loose%20fill&R-value=R-38
+GET {{backend}}/api/next/?Ceiling%20type=Ceiling%20below%20roof%20joists&Roofing%20material=Asphalt%20shingles&Roof%20color=Dark&Insulation=Blanket%20or%20loose%20fill&R-value=R-38
 Accept: application/json
 
 ### 7) Invalid path (no matching rows → both null)
-GET http://127.0.0.1:8000/api/next/?Ceiling%20type=NotAThing
+GET {{backend}}/api/next/?Ceiling%20type=NotAThing
 Accept: application/json

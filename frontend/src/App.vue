@@ -9,24 +9,24 @@
       </h1>
 
       <!-- Reset Button (top-right) -->
-  <div class="flex justify-end mb-6">
-    <button
-      @click="resetForm"
-      class="flex items-center space-x-2 p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition"
-      aria-label="Reset form"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg"
-          class="w-6 h-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-      >
-        <path d="M4 4v5h5M20 20v-5h-5M5 13a7 7 0 0112-4.9L20 8m-1 8a7 7 0 01-12 4.9L4 16"/>
-      </svg>
-      <span class="font-medium">Reset</span>
-    </button>
-  </div>
+      <div class="flex justify-end mb-6">
+        <button
+          @click="resetForm"
+          class="flex items-center space-x-2 p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition"
+          aria-label="Reset form"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg"
+               class="w-6 h-6"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke="currentColor"
+               stroke-width="2"
+          >
+            <path d="M4 4v5h5M20 20v-5h-5M5 13a7 7 0 0112-4.9L20 8m-1 8a7 7 0 01-12 4.9L4 16"/>
+          </svg>
+          <span class="font-medium">Reset</span>
+        </button>
+      </div>
 
       <!-- Step Indicator -->
       <p class="text-xl text-gray-700 mb-4 text-center">
@@ -50,27 +50,30 @@
         </div>
       </transition-group>
 
-      <!-- Question Card -->
+      <!-- Question / Result Card -->
       <transition name="fade" mode="out-in">
+        <!-- Final result -->
         <div
           v-if="constructionNumber"
           key="result"
-          class="text-center"
+          class="text-center mb-8"
         >
           <svg class="mx-auto mb-4 w-16 h-16 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd"
-                  d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586  4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0  001.414 0l8-8a1 1 0 000-1.414z"
+                  d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
                   clip-rule="evenodd"/>
           </svg>
           <p class="text-2xl font-semibold text-gray-800">
-            Final Construction Number: <span class="text-green-600">{{ constructionNumber }}</span>
+            Final Construction Number:
+            <span class="text-green-600">{{ constructionNumber }}</span>
           </p>
         </div>
 
+        <!-- Question step -->
         <div
           v-else-if="nextField && options.length"
           key="question"
-          class="space-y-6"
+          class="space-y-6 mb-8"
         >
           <p class="text-2xl font-medium text-gray-800">{{ nextField }}</p>
           <div class="flex items-center space-x-4">
@@ -94,7 +97,7 @@
         </div>
 
         <!-- Loading State -->
-        <div v-else key="loading" class="text-center text-gray-500 text-lg">
+        <div v-else key="loading" class="text-center text-gray-500 text-lg mb-8">
           Loading...
         </div>
       </transition>
@@ -105,30 +108,34 @@
 <script setup>
 import { reactive, ref, onMounted, computed } from 'vue'
 
-const selections = reactive({})
-const nextField = ref(null)
-const options = ref([])
-const constructionNumber = ref(null)
-const selectedOption = ref('')
-const estimatedTotal = 5  // adjust to your total steps
+const selections        = reactive({})
+const nextField         = ref(null)
+const options           = ref([])
+const constructionNumber= ref(null)
+const selectedOption    = ref('')
+const estimatedTotal    = 5  // update if your CSV path length changes
 
-// never let the step count exceed estimatedTotal
+// compute current step (capped)
 const displayStep = computed(() => {
   const s = Object.keys(selections).length + 1
   return s > estimatedTotal ? estimatedTotal : s
 })
 
+// base URL comes from Vite ENV, fallback to localhost
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 async function fetchNext(params = {}) {
   const query = new URLSearchParams(params).toString()
-  const res = await fetch(`http://localhost:8000/api/next/?${query}`)
-  const data = await res.json()
+  const res   = await fetch(`${API_BASE}/api/next/?${query}`)
+  const data  = await res.json()
+
   if (data.construction_number) {
     constructionNumber.value = data.construction_number
     nextField.value = null
-    options.value = []
+    options.value   = []
   } else {
     nextField.value = data.next
-    options.value = data.options
+    options.value   = data.options
     selectedOption.value = ''
   }
 }
@@ -139,11 +146,11 @@ function onNext() {
 }
 
 function resetForm() {
-  Object.keys(selections).forEach((k) => delete selections[k])
-  nextField.value = null
-  options.value = []
-  constructionNumber.value = null
-  selectedOption.value = ''
+  Object.keys(selections).forEach(k => delete selections[k])
+  nextField.value        = null
+  options.value          = []
+  constructionNumber.value= null
+  selectedOption.value   = ''
   fetchNext()
 }
 
@@ -151,6 +158,7 @@ onMounted(() => fetchNext())
 </script>
 
 <style scoped>
+/* Fade transition */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.4s ease;
 }
@@ -158,7 +166,7 @@ onMounted(() => fetchNext())
   opacity: 0;
 }
 
-/* slide transition for breadcrumbs */
+/* Slide transition for breadcrumbs */
 .slide-enter-active, .slide-leave-active {
   transition: all 0.3s ease;
 }
