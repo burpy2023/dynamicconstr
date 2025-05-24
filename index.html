@@ -170,7 +170,7 @@
       overlay.classList.add('visible');
       try {
         const query = new URLSearchParams(selections).toString();
-        const res   = await fetch(`${API_BASE}/next?${query}`);
+        const res   = await fetch(`${API_BASE}/next/?${query}`);
         const text  = await res.text();
 
         try {
