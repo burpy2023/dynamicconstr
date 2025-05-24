@@ -4,66 +4,88 @@
   <meta charset="UTF-8" />
   <title>Dynamic Construction Form</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
       min-height: 100vh;
-      font-family: Inter, sans-serif;
-      background: #181818;
-      color: #ddd;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1f1f1f;
+      color: #e0e0e0;
+      padding: 2rem;
     }
-    h1, h2, h3 { margin-bottom: 0.5rem; }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      color: #ffffff;
+    }
 
     .container {
       display: flex;
-      width: 100%;
-      height: 100%;
+      gap: 2rem;
+      flex-wrap: wrap;
     }
+
     .column {
-      width: 50%;
-      padding: 1.5rem;
+      flex: 1 1 45%;
+      background: #2a2a2a;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     }
-    .header { padding: 2rem 1.5rem; }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .progress-label {
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #444;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4ade80, #3b82f6);
+      transition: width 0.3s ease;
+    }
 
     button, select {
       font-size: 1rem;
-      border-radius: 4px;
-      border: 1px solid #555;
-    }
-    button {
-      padding: 0.4rem 0.8rem;
-      background: rgba(220, 50, 50, 0.2);
-      color: #f88;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: rgba(255,255,255,0.1);
-      color: #555;
-      cursor: not-allowed;
-    }
-    select {
-      padding: 0.4rem;
-      background: #fff;
-      color: #000;
-      border-color: #ccc;
-    }
-    select option {
-      background: #fff;
-      color: #000;
+      border-radius: 8px;
+      border: none;
+      margin-top: 1rem;
     }
 
-    .progress-label { font-size: .875rem; color: rgba(255,255,255,0.6); }
-    .progress-bar {
-      background: rgba(255,255,255,0.1);
-      height: 6px;
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: .25rem;
+    button {
+      background: #10b981;
+      color: #fff;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
     }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-      width: 0%;
-      transition: width 0.3s ease;
+
+    button:disabled {
+      background: #444;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    select {
+      padding: 0.5rem;
+      background: #fff;
+      color: #000;
+      width: 100%;
     }
 
     .pricing-table {
@@ -71,20 +93,27 @@
       border-collapse: separate;
       border-spacing: 0;
       margin-top: 1rem;
-      color: #ddd;
-    }
-    .pricing-table th,
-    .pricing-table td {
-      border: 6px solid white;
-      padding: .5rem;
-      background: rgba(0,0,0,0.6);
-    }
-    .pricing-table th {
-      background: rgba(255,255,255,0.1);
+      color: #e0e0e0;
     }
 
-    .text-muted { color: rgba(255,255,255,0.6); }
-    .text-green { color: #34D399; }
+    .pricing-table th,
+    .pricing-table td {
+      border: 3px solid #2a2a2a;
+      padding: 0.5rem;
+      background: #333;
+    }
+
+    .pricing-table th {
+      background: #444;
+    }
+
+    .text-muted {
+      color: #aaa;
+    }
+
+    .text-green {
+      color: #4ade80;
+    }
 
     .loading-overlay {
       position: fixed;
@@ -92,7 +121,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -106,7 +135,7 @@
 
     .spinner {
       border: 6px solid rgba(255, 255, 255, 0.2);
-      border-top: 6px solid #34D399;
+      border-top: 6px solid #4ade80;
       border-radius: 50%;
       width: 50px;
       height: 50px;
@@ -114,7 +143,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
@@ -229,7 +260,7 @@
           <option value="" disabled selected>Choose an option…</option>
           ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
         </select>
-        <button id="contBtn" disabled>Continue</button>
+        <button id="contBtn" class="continue-btn" disabled>Continue</button>
       `;
       const sel = document.getElementById('optSelect');
       const btn = document.getElementById('contBtn');
