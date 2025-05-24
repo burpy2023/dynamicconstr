@@ -267,13 +267,13 @@
       formArea.innerHTML = `
         <h2 class="text-green">Construction Complete</h2>
         <p class="text-muted">Construction Number</p>
-        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">${number}</p>
+        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">
+          ${number}
+        </p>
         <p class="text-muted" style="margin-top:1rem;">Total Price</p>
         <div class="total-price">$${grandTotal.toFixed(2)}</div>
-        <p class="text-muted" style="margin-top:2rem; display:flex; align-items:center;">
-          <img src="https://img.icons8.com/fluency/24/ai.png" style="margin-right: 0.5rem;" />
-          <em>${aiTip}</em>
-        </p>
+        <p class="text-muted" style="margin-top:2rem;">Tip from our experts at Conduit</p>
+        <p style="font-style: italic; color: #ddd;">${aiTip}</p>
       `;
     }
 
