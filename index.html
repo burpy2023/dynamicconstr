@@ -86,7 +86,6 @@
     .text-muted { color: rgba(255,255,255,0.6); }
     .text-green { color: #34D399; }
 
-    /* ---------- Spinner Overlay ---------- */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -152,7 +151,6 @@
     </div>
   </div>
 
-  <!-- Spinner overlay -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
   </div>
@@ -163,6 +161,7 @@
     const selections = {};
     let priceBreakdown = {};
     let grandTotal = 0;
+    let lastResponse = null;
 
     const progressLabel = document.getElementById('progressLabel');
     const progressFill  = document.getElementById('progressFill');
@@ -177,6 +176,7 @@
         const query = new URLSearchParams(selections).toString();
         const res   = await fetch(`${API_BASE}/api/next?${query}`);
         const data  = await res.json();
+        lastResponse = data;
 
         priceBreakdown = data.price_breakdown || {};
         grandTotal = Object.values(priceBreakdown)
@@ -241,6 +241,7 @@
     }
 
     function showResult(number) {
+      const aiTip = lastResponse?.ai_fact || "No tip available.";
       formArea.innerHTML = `
         <h2 class="text-green">Construction Complete</h2>
         <p class="text-muted">Construction Number</p>
@@ -251,6 +252,8 @@
         <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">
           $${grandTotal.toFixed(2)}
         </p>
+        <p class="text-muted" style="margin-top:2rem;">Tip from our experts at Conduit</p>
+        <p style="font-style: italic; color: #ddd;">${aiTip}</p>
       `;
     }
 
@@ -258,6 +261,7 @@
       for (let k in selections) delete selections[k];
       priceBreakdown = {};
       grandTotal = 0;
+      lastResponse = null;
       fetchNext();
     });
 

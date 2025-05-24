@@ -2,6 +2,8 @@ import pandas as pd
 from django.http import JsonResponse
 from pathlib import Path
 import logging
+import openai
+import os
 
 # logging
 logger = logging.getLogger(__name__)
@@ -87,11 +89,13 @@ def get_next_options(request):
         if not filtered.empty:
             total = float(round(filtered['Total Price'].iloc[0], 2))
             logger.info("No more questions. Final price: %.2f", total)
+            ai_fact = get_ai_tip(request.GET)
             return JsonResponse({
                 'next': None,
                 'construction_number': filtered['Extended Construction Numbers'].iloc[0],
                 'price_breakdown': price_breakdown,
                 'price': total,
+                'ai_fact': ai_fact
             }, status=200)
 
         # No matches
@@ -106,3 +110,22 @@ def get_next_options(request):
     except Exception as e:
         logger.exception("Unexpected error in get_next_options: %s", e)
         return JsonResponse({'error': 'Internal server error.'}, status=500)
+    
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def get_ai_tip(selections):
+    prompt = f"The user selected:\n" + "\n".join(
+        f"- {k}: {v}" for k, v in selections.items()
+    ) + "\nGive a 1-sentence helpful tip related to this configuration."
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-instruct",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=50
+        )
+        return response.choices[0].message['content']
+    except Exception as e:
+        logger.warning(f"OpenAI error: {e}")
+        return "No Expert tip available at the moment."

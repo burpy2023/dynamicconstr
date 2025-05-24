@@ -3,4 +3,5 @@ gunicorn
 celery[redis]
 pandas
 django-cors-headers
+openai==0.28
 
