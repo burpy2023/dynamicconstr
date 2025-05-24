@@ -109,3 +109,34 @@ class CeilingConstructionViewTests(TestCase):
         data = response.json()
         self.assertIn('error', data)
         self.assertEqual(data['error'], 'Internal server error.')
+
+    @patch('form.views.df.copy')
+    def test_branching_multiple_next_fields(self, mock_copy):
+        mock_copy.return_value = self.mock_df([
+            {
+                'Ceiling type': 'Type A',
+                'Roofing material': 'Material X',
+                'Attic fan': 'Yes',
+                'Extended Construction Numbers': '19A-9',
+                'Total Price': 6100
+            }
+        ])
+
+        response = self.client.get(self.url, {'Ceiling type': 'Type A'})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['next'], 'Attic fan')
+
+    @patch('form.views.df.copy')
+    def test_option_deduplication(self, mock_copy):
+        mock_copy.return_value = self.mock_df([
+            {'Ceiling type': 'Type A', 'Roofing material': 'X', 'Extended Construction Numbers': '1', 'Total Price': 100},
+            {'Ceiling type': 'Type A', 'Roofing material': 'X', 'Extended Construction Numbers': '2', 'Total Price': 200}
+        ])
+
+        response = self.client.get(self.url, {'Ceiling type': 'Type A'})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['next'], 'Roofing material')
+        self.assertEqual(len(data['options']), 1)
+        self.assertEqual(data['options'][0], 'X')
