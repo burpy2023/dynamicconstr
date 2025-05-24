@@ -85,6 +85,20 @@
     .pricing-table th {
       background: #444;
     }
+    .pricing-table tr:hover {
+      background: #3b3b3b;
+      cursor: pointer;
+    }
+    .total-price {
+      background: #1f2937;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #4ade80;
+      text-align: center;
+      margin-top: 1rem;
+    }
     .text-muted { color: #aaa; }
     .text-green { color: #4ade80; }
 
@@ -99,6 +113,7 @@
       align-items: center;
       justify-content: center;
       z-index: 9999;
+      flex-direction: column;
     }
     .loading-overlay.visible {
       display: flex;
@@ -149,10 +164,11 @@
 
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
+    <p style="margin-top: 1rem; color: white;">Calculating your quote...</p>
   </div>
 
   <script>
-    const API_BASE = 'https://ummati-app-csv8c.ondigitalocean.app/api/v2/api';
+    const API_BASE = 'https://ummati-app-csv8c.ondigitalocean.app/api/v2/api/';
     const estimatedTotal = 5;
     const selections = {};
     let priceBreakdown = {};
@@ -170,7 +186,7 @@
       overlay.classList.add('visible');
       try {
         const query = new URLSearchParams(selections).toString();
-        const res   = await fetch(`${API_BASE}/next/?${query}`);
+        const res   = await fetch(`${API_BASE}next/?${query}`);
         const text  = await res.text();
 
         try {
@@ -214,8 +230,17 @@
           : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${prop}</td><td>${selections[prop]}</td><td>${price}</td>`;
+        tr.addEventListener('click', () => {
+          delete selections[prop];
+          fetchNext();
+        });
         tableBody.appendChild(tr);
       }
+
+      // Add grand total row
+      const totalRow = document.createElement('tr');
+      totalRow.innerHTML = `<td colspan="2" style="text-align: right;"><strong>Total</strong></td><td><strong>$${grandTotal.toFixed(2)}</strong></td>`;
+      tableBody.appendChild(totalRow);
     }
 
     function showQuestion(field, options) {
@@ -242,15 +267,13 @@
       formArea.innerHTML = `
         <h2 class="text-green">Construction Complete</h2>
         <p class="text-muted">Construction Number</p>
-        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">
-          ${number}
-        </p>
+        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">${number}</p>
         <p class="text-muted" style="margin-top:1rem;">Total Price</p>
-        <p style="font-family: monospace; font-size:1.5rem; color:#34D399;">
-          $${grandTotal.toFixed(2)}
+        <div class="total-price">$${grandTotal.toFixed(2)}</div>
+        <p class="text-muted" style="margin-top:2rem; display:flex; align-items:center;">
+          <img src="https://img.icons8.com/fluency/24/ai.png" style="margin-right: 0.5rem;" />
+          <em>${aiTip}</em>
         </p>
-        <p class="text-muted" style="margin-top:2rem;">Tip from our experts at Conduit</p>
-        <p style="font-style: italic; color: #ddd;">${aiTip}</p>
       `;
     }
 
